@@ -3,6 +3,7 @@
 ## 简介
 
 这是一个基于YOLO目标检测和OpenCV图像处理的GUI应用程序，用于对视频中的特定对象进行检测和模糊处理（打码）。该工具可以帮助用户快速地对视频中敏感或隐私内容进行模糊处理，同时保留原始视频的音频。
+示例视频:[https://www.bilibili.com/video/BV1DZm4BLEum/](https://www.bilibili.com/video/BV1DZm4BLEum/)
 
 ## 功能特点
 
