@@ -123,7 +123,7 @@ class VideoBlurApp(QtWidgets.QWidget):
         self.slider_blur = QtWidgets.QSlider(QtCore.Qt.Horizontal)  # type: ignore
         self.slider_blur.setMinimum(1)
         self.slider_blur.setMaximum(20)  # 最大值模糊最强
-        self.slider_blur.setValue(5)
+        self.slider_blur.setValue(15)
 
         self.btn_start = QtWidgets.QPushButton("开始处理")
         self.btn_start.setEnabled(False)
@@ -198,7 +198,17 @@ class VideoBlurApp(QtWidgets.QWidget):
                     self.log("加载模型中...")
                     # 修复可能的None类型问题
                     if self.model_path:
+                        # 检测是否有可用的GPU
+                        import torch
+                        if torch.cuda.is_available():
+                            device = "cuda"
+                            self.log(f"检测到GPU: {torch.cuda.get_device_name(0)}")
+                        else:
+                            device = "cpu"
+                            self.log("未检测到GPU，使用CPU处理")
                         self.model = YOLO(self.model_path)
+                        # 将模型设置到相应设备
+                        self.model.to(device)
                     self.log("模型加载完成！")
                 except Exception as e:
                     self.log(f"模型加载失败: {e}")
@@ -245,7 +255,17 @@ class VideoBlurApp(QtWidgets.QWidget):
         收集所有检测到的类别并填充到下拉框中。
         """
         if not self.model:
+            # 检测是否有可用的GPU
+            import torch
+            if torch.cuda.is_available():
+                device = "cuda"
+                self.log(f"检测到GPU: {torch.cuda.get_device_name(0)}")
+            else:
+                device = "cpu"
+                self.log("未检测到GPU，使用CPU处理")
             self.model = YOLO("yolov8n.pt")
+            # 将模型设置到相应设备
+            self.model.to(device)
             self.log("未选择模型，自动加载 yolov8n.pt")
 
         sample_num = min(self.spin_sample.value(), self.total_frames)
@@ -311,6 +331,17 @@ class VideoBlurApp(QtWidgets.QWidget):
             self.log("错误：未选择视频或模型未加载")
             return
             
+        # 确保模型在正确的设备上
+        import torch
+        if torch.cuda.is_available():
+            device = "cuda"
+            self.log(f"检测到GPU: {torch.cuda.get_device_name(0)}")
+        else:
+            device = "cpu"
+            self.log("未检测到GPU，使用CPU处理")
+        if self.model is not None:
+            self.model.to(device)
+        
         target_cls = self.combo_class.currentData()
         blur_strength = self.slider_blur.value()
         self.log(f"开始处理，目标类别={target_cls}，模糊强度={blur_strength}")
